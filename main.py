@@ -1,10 +1,14 @@
 from import_data import download_data
 
-print("dasdas")
-antos = True
-if antos:
-    print("to ja")
+while True:
+    n = input("Ile chcesz spółek? (1-5) \nOdp: ")
+    if n.isnumeric():
+        n = int(n)
+        if n in range(1,5):
+            break
 
-i = 1
+companies = []
+for i in range(n):
+    companies.append(input(f"Spółka {i+1}: "))
 
-print(download_data(["AAPL"]))
+print(download_data(companies))
