@@ -97,3 +97,59 @@ chart = altair.Chart(source).mark_bar().encode(
 ).interactive()
 
 streamlit.altair_chart(chart, use_container_width=True)
+
+
+
+import altair as alt
+
+
+source['Change'] = source['Close'] - source['Open']
+
+
+import altair as alt
+
+# --- KROK 1: Obliczenie kolumny 'Change' ---
+# To jest kluczowe! Musimy wiedzieć, JAK DUŻA była zmiana,
+# żeby przypisać jej odpowiednio intensywny kolor.
+# Zakładam, że Twoja ramka danych nazywa się 'source'
+# i ma kolumny 'Close' oraz 'Open'.
+source['Change'] = source['Close'] - source['Open']
+
+# --- KROK 2: Przygotowanie skali kolorów ---
+# Znajdujemy największy spadek i największy wzrost, żeby ustawić granice gradientu.
+min_change = source['Change'].min()
+max_change = source['Change'].max()
+
+# To są "punkty kontrolne" naszej skali.
+domain_ = [min_change, 0, max_change]
+# To są kolory odpowiadające tym punktom:
+# - min_change -> ciemnoczerwony ('darkred')
+# - 0 -> jasnoszary ('lightgray') - neutralny środek
+# - max_change -> ciemnozielony ('darkgreen')
+range_ = ['darkred', 'lightgray', 'darkgreen']
+
+# --- KROK 3: Tworzenie wykresu z gradientem ---
+chart = alt.Chart(source).mark_bar(
+    # Użyj swojej zmiennej do obliczenia szerokości, jeśli chcesz
+    # np. size = (700 / len(source)) * 0.8
+    size=10  # Przykładowa stała szerokość
+).encode(
+    x='Date',
+    y=alt.Y('Open', scale=alt.Scale(zero=False), title='Cena (USD)'),
+    y2='Close',
+    # ---> GŁÓWNA ZMIANA JEST TUTAJ <---
+    color=alt.Color(
+        'Change',  # Używamy nowej, obliczonej kolumny 'Change'
+        scale=alt.Scale(
+            domain=domain_,  # Nasze punkty: [min, 0, max]
+            range=range_,    # Nasze kolory: [czerwony, szary, zielony]
+            type='linear'    # 'linear' tworzy płynny gradient między punktami
+        ),
+        title='Zmiana Ceny (Gradient)'
+    ),
+    # Dodajemy 'Change' do dymka, żeby było widać dokładną wartość
+    tooltip=['Date', 'Open', 'Close', alt.Tooltip('Change', format='.2f')]
+).interactive()
+
+# W Twojej aplikacji Streamlit użyj:
+# st.altair_chart(chart, use_container_width=True)

@@ -6,8 +6,6 @@ import datetime
 
 actual_date = datetime.date.today()
 min_date = actual_date.replace(year=actual_date.year - 5)
-# from dateutil.relativedelta import relativedelta
-# min_date = actual_date - relativedelta(years=5)
 
 streamlit.set_page_config(layout="wide")
 
@@ -133,28 +131,47 @@ with changes_page:
         
         top_gainers = data_sorted.head(5)
         top_losers = data_sorted.tail(5).sort_values(by="Change", ascending=True)
-
+        
         col1, col2 = streamlit.columns(2)
 
         
         with col1, streamlit.container(border=True):
-            streamlit.success("Największe Wzrosty")
-            streamlit.dataframe(
-                top_gainers.style.format({"Change (%)": "{:+.2f}%", "Price ($)": "{:.2f}$"}), 
-                use_container_width=True,
-                hide_index=True
-            )
+            streamlit.success("Top Gainers")
+            streamlit.table(
+                top_gainers.set_index("Name")
+                )
 
         with col2, streamlit.container(border=True):
-            streamlit.error("Największe Spadki")
-            streamlit.dataframe(
-                top_losers.style.format({"Change (%)": "{:+.2f}%", "Price ($)": "{:.2f}$"}), 
-                use_container_width=True,
-                hide_index=True
-            )
-            
-        with streamlit.container(border=True):
-            streamlit.subheader("Wizualizacja Zmian")
-            streamlit.bar_chart(data_sorted.set_index("Name")['Change'])
+            streamlit.error("Top Losers")
+            streamlit.table(top_losers.set_index("Name"))
 
-          
+        with streamlit.container(border=True):
+            chart_data = data_sorted.reset_index()
+            x_axis_column = 'Name' if 'Name' in chart_data.columns else 'index'
+
+            max_change = chart_data["Change"].iloc[0]
+            min_change = chart_data["Change"].iloc[-1]
+
+            domain_ = [min_change, 0, max_change]
+
+            range_ = ['red', 'white', 'green']
+
+            chart = altair.Chart(chart_data).mark_bar().encode(
+                x=altair.X(x_axis_column, sort='-y', title='Name'),
+                y=altair.Y('Change', title='Change (%)'),
+        
+                color=altair.Color(
+                    'Change',
+                    scale=altair.Scale(
+                        domain=domain_,
+                        range=range_,
+                        type='linear'
+                    ),
+                ),
+
+                tooltip=[x_axis_column, altair.Tooltip('Change', format='.2f')]
+            ).interactive()
+
+            streamlit.altair_chart(chart)
+
+            
