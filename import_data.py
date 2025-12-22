@@ -47,3 +47,8 @@ def all_movers(period = "Month"):
     df_result = pandas.DataFrame(result)
     # print(df_result.head(5))
     return df_result
+
+def download_info(name):
+    stock_info = yfinance.Ticker(name).info
+
+    return stock_info

@@ -1,4 +1,4 @@
-from import_data import download_data, all_movers
+from import_data import download_data, all_movers, download_info
 import matplotlib.pyplot as plt
 import streamlit
 import altair
@@ -9,12 +9,12 @@ min_date = actual_date.replace(year=actual_date.year - 5)
 
 streamlit.set_page_config(layout="wide")
 
-main, candle_page, changes_page = streamlit.tabs(["Main", "Candle Graph", "Changes Page"])
+main, changes_page, single_company = streamlit.tabs(["Main", "Changes Page", "Single Company"])
 
 
 with main:
     # Header
-    left, right = streamlit.columns([1, 3], gap="medium")
+    left, right = streamlit.columns([1, 3])
 
     # Input
     with left, streamlit.container(border=True):
@@ -67,53 +67,6 @@ with main:
                         end_price = data.tail(1)["Close"][companies[i]].values[0]
                         percent = (end_price - start_price)/start_price*100
                         stock_change[i].metric(label=companies[i], value=f"{round(end_price, 2)}$", delta=f"{round(percent, 2)}%")
-
-with candle_page:
-    left, right = streamlit.columns([1, 3], gap="medium")
-    # Input
-    with left, streamlit.container(border=True):
-        streamlit.write("### Company:")
-        
-        candle_company = streamlit.text_input("Campany name", "AAPL", key=f"Company")
-
-        start_date_candle, end_date_candle = streamlit.slider(
-            label = "Date range",
-            key = "range2",
-            min_value = min_date,
-            max_value = actual_date,
-            value = (min_date, actual_date),
-            format = "DD/MM/YY"
-        )
-
-    with right, streamlit.container(border=True), streamlit.spinner(f"Loading data..."):
-        with streamlit.spinner('Pobieranie danych z giełdy...'):
-            data_candle = download_data(candle_company, start_date_candle, end_date_candle)
-        
-            candles_df = data_candle.xs(candle_company, axis=1, level=1)
-            lenght = candles_df.size/5
-            print(lenght)
-            bar_width = (1500 / lenght)
-            # candles_df = data_candle['Close']
-            # candles_df.columns = ["Close"]
-
-            candles_df['Open'] = data_candle['Open']
-            candles_df["Height"] = abs(candles_df['Close'] - candles_df['Open'])
-            candles_df["y"] = candles_df[['Open', 'Close']].min(axis=1)
-            candles_df["Color"] = candles_df.apply(lambda row: 'green' if row['Close'] >= row['Open'] else 'red', axis=1)
-            source = candles_df.reset_index()
-
-            # Tworzymy wykres
-            chart = altair.Chart(source).mark_bar(
-                size=bar_width
-            ).encode(
-                x='Date',
-                y= altair.Y('Open', scale=altair.Scale(zero=False), title='Cena (USD)'),
-                y2='Close',
-                color=altair.Color('Color', scale=None),
-                tooltip=['Date', 'Open', 'Close']
-            ).interactive()
-
-        streamlit.altair_chart(chart, use_container_width=True)
           
 with changes_page:
     with streamlit.container(border=True):
@@ -174,4 +127,64 @@ with changes_page:
 
             streamlit.altair_chart(chart)
 
-            
+with single_company:
+    left, right = streamlit.columns([1, 3])
+    # Input
+    with left, streamlit.container(border=True):
+        streamlit.write("### Company:")
+        
+        single_company = streamlit.text_input("Campany name", "AAPL", key=f"Company")
+
+        start_date_candle, end_date_candle = streamlit.slider(
+            label = "Date range",
+            key = "range2",
+            min_value = min_date,
+            max_value = actual_date,
+            value = (min_date, actual_date),
+            format = "DD/MM/YY"
+        )
+
+
+    with right, streamlit.container(border=True), streamlit.spinner(f"Loading data..."):
+        with streamlit.spinner('Pobieranie danych z giełdy...'):
+            data_candle = download_data(single_company, start_date_candle, end_date_candle)
+        
+            candles_df = data_candle.xs(single_company, axis=1, level=1)
+            lenght = candles_df.size/5
+            print(lenght)
+            bar_width = (1500 / lenght)
+            # candles_df = data_candle['Close']
+            # candles_df.columns = ["Close"]
+
+            candles_df['Open'] = data_candle['Open']
+            candles_df["Height"] = abs(candles_df['Close'] - candles_df['Open'])
+            candles_df["y"] = candles_df[['Open', 'Close']].min(axis=1)
+            candles_df["Color"] = candles_df.apply(lambda row: 'green' if row['Close'] >= row['Open'] else 'red', axis=1)
+            source = candles_df.reset_index()
+
+            # Tworzymy wykres
+            chart = altair.Chart(source).mark_bar(
+                size=bar_width
+            ).encode(
+                x='Date',
+                y= altair.Y('Open', scale=altair.Scale(zero=False), title='Cena (USD)'),
+                y2='Close',
+                color=altair.Color('Color', scale=None),
+                tooltip=['Date', 'Open', 'Close']
+            ).interactive()
+
+        streamlit.altair_chart(chart, use_container_width=True)   
+        
+
+    with streamlit.expander(f"Show info of stock", expanded=True):
+        info_data = download_info(single_company)
+        col1, col2 = streamlit.columns(2)
+        with col1:
+            streamlit.metric("Sector", info_data.get('sector', 'No Data'))
+            streamlit.metric("", info_data.get('fullTimeEmployees', 'No Data'))
+            streamlit.metric("P/E Ratio", info_data.get('trailingPE', '-'))
+        
+        with col2:
+            streamlit.write("**Description:**")
+            streamlit.caption(info_data.get('longBusinessSummary', 'No description.'))
+            streamlit.write(f"**WWW site:** {info_data.get('website', '-')}")
