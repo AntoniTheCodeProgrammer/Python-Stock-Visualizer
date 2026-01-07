@@ -9,13 +9,11 @@ min_date = actual_date.replace(year=actual_date.year - 5)
 
 streamlit.set_page_config(layout="wide")
 
-main, changes_page, single_company = streamlit.tabs(["Main", "Changes Page", "Single Company"])
+main, changes_page, correlation_heatmap, single_company = streamlit.tabs(["Main", "Changes Page", "Correlation Heatmap", "Single Company"])
 
+left, right = streamlit.columns([1, 3])
 
 with main:
-    # Header
-    left, right = streamlit.columns([1, 3])
-
     # Input
     with left, streamlit.container(border=True):
         streamlit.write("### DATA:")
@@ -127,8 +125,28 @@ with changes_page:
 
             streamlit.altair_chart(chart)
 
+with correlation_heatmap:
+    # Input
+    with left, streamlit.container(border=True):
+        streamlit.write("### DATA:")
+        corr_number = 2
+        corr_number = streamlit.slider("How many campanies?", 1, 5, 2, key="corr_slider")
+        corr_companies = ["AAPL", "GOOG"]
+
+        for i in range(0, corr_number):
+            if  i < len(corr_companies): 
+                corr_ticker = streamlit.text_input("Campany name", corr_companies[i], key=f"corr_Company{i}")
+                corr_companies[i] = corr_ticker
+            else: 
+                corr_ticker = streamlit.text_input("Campany name", "", key=f"corr_Company{i}")
+                corr_companies.append(corr_ticker)
+        for i in range(5-corr_number):
+            streamlit.space("large")
+
+    with right, streamlit.container(border=True):
+        streamlit.table(["dadsa","dadsa"], ["dadsa2","dadsa2"])
+
 with single_company:
-    left, right = streamlit.columns([1, 3])
     # Input
     with left, streamlit.container(border=True):
         streamlit.write("### Company:")
