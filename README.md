@@ -21,7 +21,7 @@ An interactive web application for analyzing and visualizing historical stock ma
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/YourUsername/Python-Stock-Visualizer.git](https://github.com/YourUsername/Python-Stock-Visualizer.git)
+    git clone https://github.com/AntoniTheCodeProgrammer/Python-Stock-Visualizer
     cd Python-Stock-Visualizer
     ```
 
