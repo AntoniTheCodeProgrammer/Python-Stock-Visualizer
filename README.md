@@ -25,16 +25,28 @@ An interactive web application for analyzing and visualizing historical stock ma
     cd Python-Stock-Visualizer
     ```
 
-2.  **Install dependencies:**
-    It is recommended to use a virtual environment.
+2.  **Set up a virtual environment (Recommended):**
+    This keeps dependencies isolated from your system.
+    * **Windows:**
+        ```bash
+        python -m venv .venv
+        .venv\Scripts\activate
+        ```
+    * **Mac/Linux:**
+        ```bash
+        python3 -m venv .venv
+        source .venv/bin/activate
+        ```
+
+3.  **Install dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-3.  **Run the application:**
+4.  **Run the application:**
     ```bash
     streamlit run main.py
     ```
-
+    
 ---
 *Created as a project to demonstrate Data Science and Data Visualization skills in Python.*
