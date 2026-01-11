@@ -5,7 +5,7 @@ def download_data(companies, start_date, end_date):
     print("Downloading Data...")
     
     data = yfinance.download(companies, start_date, end_date)
-    data.fillna(method = "ffill", inplace=True)
+    data.ffill(inplace=True)
 
     print("Data downloaded!")
     return data

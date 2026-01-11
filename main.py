@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import altair as alt
 import datetime
+import pandas as pd
 
 actual_date = datetime.date.today()
 min_date = actual_date.replace(year=actual_date.year - 5)
@@ -32,10 +33,10 @@ with main_page, st.spinner("Site loading..."):
 
         for i in range(0, number):
             if  i < len(companies): 
-                ticker = st.text_input("Campany name", companies[i], key=f"Company{i}")
+                ticker = st.text_input("Company name", companies[i], key=f"Company{i}")
                 companies[i] = ticker
             else: 
-                ticker = st.text_input("Campany name", "", key=f"Company{i}")
+                ticker = st.text_input("Company name", "", key=f"Company{i}")
                 companies.append(ticker)
         for i in range(5-number):
             st.space("large")
@@ -140,10 +141,10 @@ with correlation_heatmap_page, st.spinner("Site loading..."):
 
         for i in range(0, corr_number):
             if  i < len(corr_companies): 
-                corr_ticker = st.text_input("Campany name", corr_companies[i], key=f"corr_Company{i}")
+                corr_ticker = st.text_input("Company name", corr_companies[i], key=f"corr_Company{i}")
                 corr_companies[i] = corr_ticker
             else: 
-                corr_ticker = st.text_input("Campany name", "", key=f"corr_Company{i}")
+                corr_ticker = st.text_input("Company name", "", key=f"corr_Company{i}")
                 corr_companies.append(corr_ticker)
 
     with right, st.container(border=True):
@@ -191,7 +192,7 @@ with single_company_page, st.spinner("Site loading..."):
     with left, st.container(border=True):
         st.write("### Company:")
         
-        single_company = st.text_input("Campany name", "AAPL", key=f"Company")
+        single_company = st.text_input("Company name", "AAPL", key=f"Company")
 
         start_date_candle, end_date_candle = st.slider(
             label = "Date range",
@@ -207,7 +208,11 @@ with single_company_page, st.spinner("Site loading..."):
         with st.spinner('Pobieranie danych z giełdy...'):
             data_candle = download_data(single_company, start_date_candle, end_date_candle)
         
-            candles_df = data_candle.xs(single_company, axis=1, level=1)
+            if isinstance(data_candle.columns, pd.MultiIndex):
+                candles_df = data_candle.xs(single_company, axis=1, level=1)
+            else:
+                candles_df = data_candle.copy()
+                
             lenght = candles_df.size/5
             print(lenght)
             bar_width = (1500 / lenght)
